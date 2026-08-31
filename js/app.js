@@ -117,6 +117,14 @@ function wireSearchUI() {
   const searchInput = document.getElementById('search-input');
   const searchResults = document.getElementById('search-results');
 
+  // 親パネルがoverflow-y-autoでクリップされるため、fixed配置にして画面基準の座標を都度計算する
+  function positionSearchResults() {
+    const rect = searchInput.getBoundingClientRect();
+    searchResults.style.left = rect.left + 'px';
+    searchResults.style.top = (rect.bottom + 4) + 'px';
+    searchResults.style.width = rect.width + 'px';
+  }
+
   searchInput.addEventListener('input', () => {
     const kw = searchInput.value.trim();
     if (!kw) {
@@ -124,6 +132,7 @@ function wireSearchUI() {
       return;
     }
     const results = DataStore.search(kw);
+    positionSearchResults();
     if (results.length === 0) {
       searchResults.innerHTML = '<div class="search-result-item text-gray-400">見つかりませんでした</div>';
       searchResults.classList.remove('hidden');
@@ -165,6 +174,8 @@ window.onload = async function () {
   document.getElementById('btn-home').addEventListener('click', () => OverlayMode.goHome());
   document.getElementById('tab-overlay').addEventListener('click', () => switchMode('overlay'));
   document.getElementById('tab-compare').addEventListener('click', () => switchMode('compare'));
+
+  HelpModal.wire();
 
   switchMode('overlay');
 

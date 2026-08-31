@@ -36,10 +36,13 @@
   </div>
 
   <!-- 左上パネル：タイトル・モード切替・検索 -->
-  <div class="absolute top-4 left-4 z-[1000] bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-gray-100 w-[320px] max-w-[90vw] max-h-[85vh] overflow-y-auto">
+  <div class="absolute top-2 left-4 z-[1000] bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-gray-100 w-[320px] max-w-[90vw] max-h-[96vh] overflow-y-auto">
     <h1 class="text-lg font-bold text-gray-800 flex items-center gap-2 mb-3">
       <i data-lucide="map" class="w-5 h-5 text-red-500 shrink-0"></i>
-      市区町村サイズくらべ
+      <span class="flex-1">市区町村サイズくらべ</span>
+      <button id="btn-help" title="使い方・このサイトについて" class="shrink-0 text-gray-400 hover:text-gray-700 transition-colors">
+        <i data-lucide="circle-help" class="w-5 h-5"></i>
+      </button>
     </h1>
 
     <!-- モード切替タブ -->
@@ -62,7 +65,6 @@
       <div class="relative">
         <input id="search-input" type="text" placeholder="市区町村名で検索..."
           class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-lg p-2 outline-none" autocomplete="off">
-        <div id="search-results" class="hidden absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-56 overflow-y-auto z-10"></div>
       </div>
     </div>
 
@@ -91,9 +93,63 @@
     </button>
   </div>
 
+  <!-- 市区町村検索の候補リスト（左上パネルのbackdrop-blurがposition:fixedの基準点になってしまうため、パネルの外＝body直下に置く） -->
+  <div id="search-results" class="hidden fixed bg-white border border-gray-200 rounded-lg shadow-lg max-h-56 overflow-y-auto z-[1500]"></div>
+
   <!-- トースト通知 -->
   <div id="toast" class="hidden absolute bottom-24 left-1/2 -translate-x-1/2 z-[1100] bg-gray-800/90 backdrop-blur-sm text-white px-6 py-3 rounded-full shadow-2xl text-sm font-medium">
     <span id="toast-message"></span>
+  </div>
+
+  <!-- 使い方・制作背景モーダル -->
+  <div id="help-modal" class="hidden fixed inset-0 z-[3000] items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
+      <div class="flex items-center justify-between px-5 pt-5">
+        <h2 class="text-lg font-bold text-gray-800">市区町村サイズくらべ について</h2>
+        <button id="btn-help-close" class="text-gray-400 hover:text-gray-700">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-1 bg-gray-100 rounded-xl p-1 mx-5 mt-4">
+        <button id="help-tab-usage" class="mode-tab-btn is-active" data-help-tab="usage">使い方</button>
+        <button id="help-tab-story" class="mode-tab-btn" data-help-tab="story">これはどうやって作られたか</button>
+      </div>
+
+      <div class="overflow-y-auto px-5 pb-5 pt-4 help-content">
+        <div id="help-panel-usage">
+          <p>市区町村の「大きさ」を、地図の上で実感・比較するためのツールです。2つの見方ができます。</p>
+
+          <h3>重ね合わせ型</h3>
+          <p>市区町村をひとつ選ぶと、その形が地図の中心に表示されます。地図をドラッグすると形もついてきて、その場所に置いたら実際どのくらいの大きさに見えるかを体感できます（緯度によって地図上の見た目が拡大・縮小される、メルカトル図法の歪みも含めてそのまま表示しています）。</p>
+
+          <h3>並べて配置型</h3>
+          <p>市区町村を選ぶと、そのつど自動的に地図へ追加されます（最大5個）。追加された形はそれぞれドラッグでつまんで動かせます。こちらは緯度による見た目の歪みを打ち消す補正をかけているため、遠く離れた場所同士に置いても、実際の面積比のまま正しく比較できます。</p>
+
+          <h3>市区町村の選び方</h3>
+          <p>「都道府県→市区町村」のプルダウン、または検索欄にキーワードを入力して選べます（全国1,906件、政令指定都市の区・東京23区も個別に選択できます）。</p>
+
+          <h3>データの出典</h3>
+          <p>地図: OpenStreetMap contributors。境界データ: 国土交通省 国土数値情報（行政区域データ）を加工して使用しています。</p>
+        </div>
+
+        <div id="help-panel-story" class="hidden">
+          <p>このツールは「Claude Codeを使いこなすための習作」として、会話だけで作られました。</p>
+
+          <h3>きっかけ</h3>
+          <p>「どこでも北海道マップ」のように、地域の大きさを体感できるサイトが市区町村単位でも欲しい、という思いつきから始まりました。まずClaude Codeに、似たようなサービスが既にないか調べてもらい、都道府県単位や国単位で比べるサイトはあっても、市区町村を選んで重ねたり並べたりできる専用サイトは見当たらなかったため、新規に作ることにしました。</p>
+
+          <h3>調査と設計</h3>
+          <p>「どこでも北海道」の実装（公開されているソースコード）を解析して仕組みを理解した上で、市区町村1,906件分の境界データを国土交通省 国土数値情報から用意し、地図描画にLeaflet、球面上の座標計算にTurf.jsを使う設計にしました。</p>
+
+          <h3>実装中に見つかった間違い</h3>
+          <p>「並べて配置型」で離れた場所に置いても実際の面積比が保たれるようにする補正の数式は、最初に考えた式だと緯度によって見た目が変わってしまう誤りがありました。Claude Code自身が数式を導出し直し、正しい式に修正しています。また、市区町村を選んでも地図に反映されない不具合が見つかった際も、原因（追加ボタンを押す2段階のUIが分かりにくかったこと）を特定し、選んだ瞬間に反映されるよう修正しました。</p>
+
+          <h3>公開まで</h3>
+          <p>ローカルで動作確認した後、同僚に見てもらうためGitHub Pagesで公開しました。その際、コミット履歴に会社のメールアドレスと実名がそのまま記録され、誰でも閲覧できる状態になっていることに気づき、著者情報を匿名化してから公開し直しています。</p>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- フッター：出典表記 -->
@@ -105,6 +161,7 @@
   <script src="js/geo.js"></script>
   <script src="js/overlayMode.js"></script>
   <script src="js/compareMode.js"></script>
+  <script src="js/help.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

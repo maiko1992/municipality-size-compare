@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>市区町村サイズくらべ</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Turf.js（球面上の平行移動・拡縮・面積計算に使用） -->
+  <script src="https://unpkg.com/@turf/turf@7/turf.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="relative w-full h-[100dvh] bg-[#e5e7eb] overflow-hidden">
+
+  <!-- ローディング画面 -->
+  <div id="loading-overlay" class="absolute inset-0 z-[2000] bg-white/80 flex flex-col items-center justify-center backdrop-blur-sm">
+    <div class="w-10 h-10 border-4 border-red-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+    <div class="text-gray-700 font-medium tracking-wide">市区町村データを読み込み中...</div>
+  </div>
+
+  <!-- マップコンテナ -->
+  <div id="map" class="w-full h-full absolute inset-0 z-0"></div>
+
+  <!-- 中央の十字レティクル（重ね合わせ型のみ表示） -->
+  <div id="reticle" class="absolute inset-0 pointer-events-none z-[1000] hidden items-center justify-center">
+    <div class="relative w-10 h-10 opacity-50">
+      <div class="absolute top-1/2 left-0 w-full h-[2px] bg-gray-900 -translate-y-1/2 rounded-full"></div>
+      <div class="absolute left-1/2 top-0 w-[2px] h-full bg-gray-900 -translate-x-1/2 rounded-full"></div>
+      <div class="absolute inset-0 border-2 border-gray-900 rounded-full scale-50"></div>
+    </div>
+  </div>
+
+  <!-- 左上パネル：タイトル・モード切替・検索 -->
+  <div class="absolute top-4 left-4 z-[1000] bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-gray-100 w-[320px] max-w-[90vw] max-h-[85vh] overflow-y-auto">
+    <h1 class="text-lg font-bold text-gray-800 flex items-center gap-2 mb-3">
+      <i data-lucide="map" class="w-5 h-5 text-red-500 shrink-0"></i>
+      市区町村サイズくらべ
+    </h1>
+
+    <!-- モード切替タブ -->
+    <div class="grid grid-cols-2 gap-1 bg-gray-100 rounded-xl p-1 mb-4">
+      <button id="tab-overlay" class="mode-tab-btn is-active" data-mode="overlay">重ね合わせ型</button>
+      <button id="tab-compare" class="mode-tab-btn" data-mode="compare">並べて配置型</button>
+    </div>
+    <p id="mode-desc" class="text-xs text-gray-500 leading-relaxed mb-3"></p>
+
+    <!-- 検索UI -->
+    <div class="space-y-2">
+      <div class="flex gap-2">
+        <select id="pref-select" class="flex-1 bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-lg p-2 outline-none">
+          <option value="">都道府県...</option>
+        </select>
+        <select id="city-select" class="flex-1 bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-lg p-2 outline-none" disabled>
+          <option value="">市区町村...</option>
+        </select>
+      </div>
+      <div class="relative">
+        <input id="search-input" type="text" placeholder="市区町村名で検索..."
+          class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-lg p-2 outline-none" autocomplete="off">
+        <div id="search-results" class="hidden absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-56 overflow-y-auto z-10"></div>
+      </div>
+    </div>
+
+    <!-- 並べて配置型：選択中リスト -->
+    <div id="compare-list" class="hidden mt-3 space-y-1.5 border-t border-gray-100 pt-3"></div>
+  </div>
+
+  <!-- 右上パネル：重ね合わせ型のステータス表示 -->
+  <div id="overlay-status" class="absolute top-4 right-4 z-[1000] bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-gray-100 min-w-[180px]">
+    <div class="text-xs font-semibold text-gray-400 tracking-wider mb-1 uppercase">現在地の中心座標</div>
+    <div id="coords-display" class="font-mono text-sm text-gray-700 mb-3 bg-gray-50 p-2 rounded-lg border border-gray-100">
+      N --.---°<br/>E ---.---°
+    </div>
+    <div class="text-xs font-semibold text-gray-400 tracking-wider mb-1 uppercase">見た目の大きさ（対 実際の位置）</div>
+    <div class="flex items-baseline gap-1">
+      <span id="scale-display" class="text-2xl font-black text-red-500 tracking-tight">100.0</span>
+      <span class="text-sm text-gray-500 font-medium">%</span>
+    </div>
+  </div>
+
+  <!-- 下部中央ボタン（重ね合わせ型のみ） -->
+  <div id="overlay-controls" class="absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000] flex gap-3">
+    <button id="btn-home" class="flex items-center gap-2 bg-white px-4 py-3 rounded-2xl shadow-lg font-medium text-sm text-gray-700 hover:bg-gray-50 transition-all active:scale-95 border border-gray-200">
+      <i data-lucide="map-pin" class="w-4 h-4 text-red-500"></i>
+      元の位置
+    </button>
+  </div>
+
+  <!-- トースト通知 -->
+  <div id="toast" class="hidden absolute bottom-24 left-1/2 -translate-x-1/2 z-[1100] bg-gray-800/90 backdrop-blur-sm text-white px-6 py-3 rounded-full shadow-2xl text-sm font-medium">
+    <span id="toast-message"></span>
+  </div>
+
+  <!-- フッター：出典表記 -->
+  <div class="absolute bottom-1 left-1/2 -translate-x-1/2 z-[900] text-[10px] text-gray-500 bg-white/70 px-2 rounded pointer-events-none">
+    地図: &copy; OpenStreetMap contributors ｜ 境界データ: 出典 国土交通省 国土数値情報（行政区域データ, N03-21）を加工して作成（データ整形: smartnews-smri/japan-topography）
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/geo.js"></script>
+  <script src="js/overlayMode.js"></script>
+  <script src="js/compareMode.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -45,7 +45,9 @@ const OverlayMode = (() => {
     clearShape();
     currentFeature = feature;
     originCenter = GeoUtil.bboxCenter(feature);
-    map.flyTo([originCenter.lat, originCenter.lng], 7, { duration: 1.2 });
+    // 地図は動かさず、今表示している場所・縮尺のままその場に図形を置く
+    // （実際の位置originCenterはスケール計算と「元の位置」ボタンのために保持する）
+    render();
 
     document.getElementById('overlay-name').textContent = displayName || '';
     const popRow = document.getElementById('overlay-population-row');

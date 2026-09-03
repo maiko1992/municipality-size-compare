@@ -75,6 +75,10 @@ i[data-lucide] { display: inline-block; }
 .compare-item .btn-remove:hover { color: #ef4444; }
 
 .compare-shape-label {
+  display: inline-block;
+  /* マーカーのアンカー座標（=図形の中心点）はこのspanの左上端に一致するため、
+     transformで自分自身の幅・高さの半分だけ戻して中心が図形の中心と重なるようにする */
+  transform: translate(-50%, -50%);
   font-size: 0.7rem;
   font-weight: 600;
   color: #fff;

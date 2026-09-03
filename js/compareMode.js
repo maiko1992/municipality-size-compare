@@ -57,14 +57,14 @@ const CompareMode = (() => {
     return { lat, lng };
   }
 
-  function addFeature(feature, displayName, code) {
+  function addFeature(feature, displayName, code, population) {
     if (isFull()) return false;
     if (shapes.some(s => s.code === code)) return false;
 
     const centroid = GeoUtil.bboxCenter(feature);
     const anchor = initialAnchor(shapes.length);
     const shape = {
-      code, displayName, feature, centroid, anchor,
+      code, displayName, feature, centroid, anchor, population,
       color: nextColor(),
       layer: null,
       labelMarker: null
@@ -140,12 +140,16 @@ const CompareMode = (() => {
     container.innerHTML = '';
     shapes.forEach(s => {
       const area = GeoUtil.areaKm2(s.feature);
+      const popText = s.population != null ? `${s.population.toLocaleString('ja-JP')}人` : '';
       const row = document.createElement('div');
       row.className = 'compare-item';
       row.innerHTML = `
         <span class="swatch" style="background:${s.color}"></span>
         <span class="name">${s.displayName}</span>
-        <span class="area">${area.toFixed(1)} km²</span>
+        <span class="stats">
+          <span class="area">${area.toFixed(1)} km²</span>
+          ${popText ? `<span class="population">${popText}</span>` : ''}
+        </span>
         <i data-lucide="x" class="w-3.5 h-3.5 btn-remove" data-code="${s.code}"></i>
       `;
       container.appendChild(row);

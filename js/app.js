@@ -41,7 +41,8 @@ async function selectForOverlay(item) {
   showLoading(true);
   try {
     const feature = await DataStore.getFeature(item.code, item.prefCode);
-    OverlayMode.selectFeature(feature);
+    const population = DataStore.getPopulation(item.code);
+    OverlayMode.selectFeature(feature, item.displayName, population);
   } catch (e) {
     showToast(e.message);
   }
@@ -56,7 +57,8 @@ async function selectForCompare(item) {
   showLoading(true);
   try {
     const feature = await DataStore.getFeature(item.code, item.prefCode);
-    const added = CompareMode.addFeature(feature, item.displayName, item.code);
+    const population = DataStore.getPopulation(item.code);
+    const added = CompareMode.addFeature(feature, item.displayName, item.code, population);
     if (!added) showToast('すでに追加されているか、上限に達しています');
   } catch (e) {
     showToast(e.message);
@@ -182,6 +184,7 @@ window.onload = async function () {
   showLoading(true);
   try {
     await DataStore.loadIndex();
+    await DataStore.loadPopulation();
     buildPrefSelect();
   } catch (e) {
     showToast('データの読み込みに失敗しました: ' + e.message);

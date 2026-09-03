@@ -42,19 +42,22 @@ js/
   compareMode.js        … 並べて配置型のロジック
   app.js                … 起動処理・モード切替・検索UI
 data/
-  muni-index.json       … 全1,906件の検索用軽量インデックス
+  muni-index.json       … 検索用軽量インデックス（区・東京23区の個別1,906件＋政令市20件を統合した「市」単位エントリ）
+  population.json       … 市区町村コード→総人口（2020年国勢調査）
   municipality/s0010/   … 都道府県別の境界GeoJSON（47ファイル）
 scripts/
-  build-index.ps1       … data/municipality/s0010から muni-index.json を再生成するスクリプト
+  build-index.ps1       … data/municipality/s0010から muni-index.json を再生成するスクリプト（政令市の「市」単位エントリも自動生成）
   serve.ps1             … ローカルHTTPサーバー
 ```
 
 ## データの出典
 地図データ: © OpenStreetMap contributors
 
-境界データ: 出典 国土交通省 国土数値情報（行政区域データ、N03-21）https://nlftp.mlit.go.jp/ksj/ を加工して作成。データ整形元: [smartnews-smri/japan-topography](https://github.com/smartnews-smri/japan-topography)（簡素化レベル1%、都道府県別GeoJSON）。
+境界データ: 出典 国土交通省 国土数値情報（行政区域データ、N03-21）https://nlftp.mlit.go.jp/ksj/ を加工して作成。データ整形元: [smartnews-smri/japan-topography](https://github.com/smartnews-smri/japan-topography)（簡素化レベル1%、都道府県別GeoJSON）。政令指定都市は区ごとのGeoJSONをTurf.jsで結合し、「市」単位の形状として表示しています。
+
+人口データ: 総務省統計局 令和2年国勢調査「都道府県・市区町村別の主な結果」（e-Stat）より、市区町村（政令市の区・東京23区を含む）ごとの総人口を使用。
 
 ## 制限事項
 - フリガナ検索は未対応です（元データに読み仮名が含まれていないため）。漢字での部分一致検索、または都道府県→市区町村のプルダウン選択をご利用ください。
-- 政令指定都市の区・東京23区は分割されたまま個別の選択肢として扱っています（区を統合した「市」単位での選択は未対応）。
 - 境界データは簡素化（1%）されているため、詳細な形状の再現性より表示速度を優先しています。
+- 人口は2020年（令和2年）国勢調査時点のもので、その後の増減は反映されていません。北方領土の一部および双葉町（当時避難指示区域）は元データが非公表のため人口未表示です。

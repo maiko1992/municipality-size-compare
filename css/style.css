@@ -55,7 +55,14 @@ i[data-lucide] { display: inline-block; }
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.compare-item .area {
+.compare-item .stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+.compare-item .area,
+.compare-item .population {
   color: #9ca3af;
   font-size: 0.7rem;
   white-space: nowrap;

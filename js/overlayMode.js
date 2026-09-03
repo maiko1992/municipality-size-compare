@@ -37,13 +37,24 @@ const OverlayMode = (() => {
     }
     currentFeature = null;
     originCenter = null;
+    document.getElementById('overlay-name').textContent = '';
+    document.getElementById('overlay-population-row').classList.add('hidden');
   }
 
-  function selectFeature(feature) {
+  function selectFeature(feature, displayName, population) {
     clearShape();
     currentFeature = feature;
     originCenter = GeoUtil.bboxCenter(feature);
     map.flyTo([originCenter.lat, originCenter.lng], 7, { duration: 1.2 });
+
+    document.getElementById('overlay-name').textContent = displayName || '';
+    const popRow = document.getElementById('overlay-population-row');
+    if (population != null) {
+      document.getElementById('overlay-population').textContent = population.toLocaleString('ja-JP');
+      popRow.classList.remove('hidden');
+    } else {
+      popRow.classList.add('hidden');
+    }
   }
 
   function render() {

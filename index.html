@@ -72,8 +72,8 @@
     <div id="compare-list" class="hidden mt-3 space-y-1.5 border-t border-gray-100 pt-3"></div>
   </div>
 
-  <!-- 右上パネル：重ね合わせ型のステータス表示 -->
-  <div id="overlay-status" class="absolute top-4 right-4 z-[1000] bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-gray-100 min-w-[180px]">
+  <!-- 右上パネル：重ね合わせ型のステータス表示（スマホでは左上パネルと重ならないよう左下に表示） -->
+  <div id="overlay-status" class="absolute bottom-24 left-4 sm:bottom-auto sm:left-auto sm:top-4 sm:right-4 z-[1000] bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-gray-100 min-w-[180px]">
     <div id="overlay-name" class="text-sm font-bold text-gray-800 mb-1"></div>
     <div id="overlay-population-row" class="hidden text-xs text-gray-500 mb-3">
       人口 <span id="overlay-population" class="font-semibold text-gray-700"></span> 人

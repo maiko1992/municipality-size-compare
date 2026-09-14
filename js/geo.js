@@ -11,12 +11,16 @@ const GeoUtil = (() => {
   }
 
   // fromLatLng -> toLatLng の方位角・距離だけ図形全体を剛体移動する
+  // turf.transformTranslateは等角航路(rhumb line)で移動を適用するため、
+  // 距離・方位角も同じrhumb系（rhumbDistance/rhumbBearing）で揃える必要がある。
+  // 大圏距離(turf.distance/turf.bearing)で計算すると、長距離移動時に
+  // 移動先が大きくズレる（例: 沖縄の市区町村を本州付近まで動かすと数十km単位でズレる）。
   function translateFeature(feature, fromLatLng, toLatLng) {
     const from = toPoint(fromLatLng);
     const to = toPoint(toLatLng);
-    const dist = turf.distance(from, to, { units: 'kilometers' });
+    const dist = turf.rhumbDistance(from, to, { units: 'kilometers' });
     if (dist < 1e-6) return feature;
-    const bearing = turf.bearing(from, to);
+    const bearing = turf.rhumbBearing(from, to);
     return turf.transformTranslate(feature, dist, bearing, { units: 'kilometers' });
   }
 

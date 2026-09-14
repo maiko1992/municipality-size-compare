@@ -181,6 +181,10 @@ window.onload = async function () {
 
   switchMode('overlay');
 
+  // switchMode()内でcompare-listのアイコンが再生成されるため、
+  // それが終わった後にトグルボタンの初期表示を合わせる
+  PanelToggle.wire();
+
   showLoading(true);
   try {
     await DataStore.loadIndex();
